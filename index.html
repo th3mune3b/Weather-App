@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #090204;
+            --primary-red: #ff2a5f;
+            --primary-glow: rgba(255, 42, 95, 0.35);
+            --secondary-glow: rgba(255, 77, 109, 0.2);
+            --card-bg: rgba(22, 8, 12, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #b8939d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(180, 10, 50, 0.3) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(120, 5, 30, 0.25) 0%, transparent 50%);
+            color: var(--text-main);
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 32px 26px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px var(--primary-glow);
+            transition: transform 0.3s ease;
+        }
+
+        .app-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #fff, var(--text-muted));
+            background-clip: text;
+            -webkit-background-clip: text;
+
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cityInput {
+            width: 100%;
+            padding: 16px 54px 16px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cityInput::placeholder {
+            color: rgba(184, 147, 157, 0.6);
+        }
+
+        .cityInput:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--primary-red);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .searchBtn {
+            position: absolute;
+            right: 8px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary-red), #c1121f);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .searchBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .searchBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Weather UI Custom Layout */
+        .weatherCard:not(:empty) {
+            margin-top: 10px;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        .city-name {
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 6px;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .weather-desc {
+            text-align: center;
+            text-transform: capitalize;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .temp-display {
+            background: linear-gradient(135deg, rgba(255, 42, 95, 0.15), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 42, 95, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .temp-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .temp-val {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary-red);
+            line-height: 1;
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 14px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: border-color 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: rgba(255, 42, 95, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Loading Spinner */
+        .loading-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 42, 95, 0.15);
+            border-top-color: var(--primary-red);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .loading-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .errorMsg {
+            margin-top: 14px;
+            color: #ff4d6d;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 600;
+            min-height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="app-title">Weather Radar</h1>
+
+        <div class="search-container">
+            <input type="text" placeholder="Enter City Name..." class="cityInput">
+            <button class="searchBtn"><i class="fa fa-search"></i></button>
+        </div>
+
+        <div class="weatherCard"></div>
+        <p class="errorMsg"></p>
+    </div>
+</body>
+
+<script>
+    let cityInput = document.querySelector(".cityInput");
+    let searchBtn = document.querySelector(".searchBtn");
+    let weatherCard = document.querySelector(".weatherCard");
+    let errorMsg = document.querySelector(".errorMsg");
+
+    function fetchWeather() {
+        weatherCard.innerHTML = "";
+        errorMsg.innerText = "";
+        let city = cityInput.value.trim();
+
+        if (city === "") {
+            errorMsg.innerText = "Error: Enter city Name to check the weather";
+            return;
+        }
+
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b4699696e01ee4786d0dc3ab2041b1d6&units=metric`;
+
+        async function fetchWeatherApi() {
+            try {
+                weatherCard.innerHTML = `
+                    <div class="loading-box">
+                        <div class="spinner"></div>
+                        <span class="loading-text">Fetching Weather...</span>
+                    </div>`;
+
+                let response = await fetch(url);
+                let data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error("Enter Valid City Name");
+                }
+
+                // Interactive Modern Card Markup
+                weatherCard.innerHTML = `
+                    <div class="city-name">${data.name}</div>
+                    <div class="weather-desc">${data.weather[0].description}</div>
+                    
+                    <div class="temp-display">
+                        <div class="temp-val">${Math.round(data.main.temp)}°C</div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-label"><i class="fa fa-thermometer-half"></i> Feels Like</span>
+                            <span class="stat-value">${data.main.feels_like} °C</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label"><i class="fa fa-tint"></i> Humidity</span>
+                            <span class="stat-value">${data.main.humidity}%</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label"><i class="fa fa-wind"></i> Wind</span>
+                            <span class="stat-value">${data.wind.speed} KM/H</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label"><i class="fa fa-eye"></i> Condition</span>
+                            <span class="stat-value" style="text-transform: capitalize;">${data.weather[0].main}</span>
+                        </div>
+                    </div>`;
+
+            } catch (error) {
+                weatherCard.innerHTML = "";
+                errorMsg.innerText = error.message;
+            }
+        }
+        fetchWeatherApi();
+    }
+
+    searchBtn.addEventListener("click", fetchWeather);
+
+    cityInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            fetchWeather();
+        }
+    });
+</script>
+
+</html>
